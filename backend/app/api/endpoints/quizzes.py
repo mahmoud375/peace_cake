@@ -10,7 +10,7 @@ from app.api.deps import get_db_session
 from app.models import Profile, Question, Quiz
 from app.schemas.quiz import QuizCreate, QuizRead, QuizSummary, QuizUpdate
 
-router = APIRouter(prefix="/api", tags=["quizzes"])
+router = APIRouter(prefix="/api/v1", tags=["quizzes"])
 
 
 @router.get("/profiles/{profile_id}/quizzes", response_model=List[QuizSummary])

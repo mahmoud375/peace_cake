@@ -15,6 +15,7 @@ const ProfileSelectPage = () => {
   const fetchProfiles = useProfileStore((state: ProfileState) => state.fetchProfiles);
   const createProfile = useProfileStore((state: ProfileState) => state.createProfile);
   const selectProfile = useProfileStore((state: ProfileState) => state.selectProfile);
+  const deleteProfile = useProfileStore((state: ProfileState) => state.deleteProfile);
 
   const [profileName, setProfileName] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
@@ -59,16 +60,31 @@ const ProfileSelectPage = () => {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
           {profiles.map((profile) => (
-            <button
-              key={profile.id}
-              type="button"
-              className="btn btn-secondary"
-              style={{ width: "100%", justifyContent: "flex-start" }}
-              onClick={() => handleSelect(profile)}
-            >
-              {profile.name}
-              {selectedProfile?.id === profile.id && <span style={{ marginLeft: "0.5rem" }}>• Selected</span>}
-            </button>
+            <div key={profile.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ flex: 1, justifyContent: "flex-start" }}
+                onClick={() => handleSelect(profile)}
+              >
+                {profile.name}
+                {selectedProfile?.id === profile.id && <span style={{ marginLeft: "0.5rem" }}>• Selected</span>}
+              </button>
+              <button
+                type="button"
+                className="btn"
+                style={{ padding: "0.5rem 0.75rem", background: "#fee2e2", color: "#dc2626" }}
+                onClick={() => {
+                  const confirmed = window.confirm(
+                    "Are you sure you want to delete this profile and all its associated data?",
+                  );
+                  if (!confirmed) return;
+                  deleteProfile(profile.id).catch((error) => console.error(error));
+                }}
+              >
+                ×
+              </button>
+            </div>
           ))}
           {!profiles.length && !loading && <div>No profiles yet. Create one below.</div>}
         </div>

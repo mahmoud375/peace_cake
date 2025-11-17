@@ -12,7 +12,7 @@ from app.models import Profile, Quiz
 from app.schemas.profile import ProfileCreate, ProfileDetail, ProfileRead
 from app.schemas.quiz import QuizSummary
 
-router = APIRouter(prefix="/api/profiles", tags=["profiles"])
+router = APIRouter(prefix="/api/v1/profiles", tags=["profiles"])
 
 
 @router.get("/", response_model=List[ProfileRead])

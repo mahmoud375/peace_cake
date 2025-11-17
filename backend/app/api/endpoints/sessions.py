@@ -12,7 +12,7 @@ from app.schemas.session import (
 )
 from app.services.session_manager import SessionManager, SessionState
 
-router = APIRouter(prefix="/api/sessions", tags=["sessions"])
+router = APIRouter(prefix="/api/v1/sessions", tags=["sessions"])
 
 
 def _session_to_schema(state: SessionState) -> SessionRead:

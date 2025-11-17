@@ -13,6 +13,7 @@ interface ProfileState {
   createProfile: (name: string) => Promise<Profile>;
   selectProfile: (profile: Profile | null) => void;
   loadProfileDetail: (profileId: string) => Promise<ProfileDetail>;
+  deleteProfile: (profileId: string) => Promise<void>;
 }
 
 const profileStore: StateCreator<ProfileState> = (set, get) => ({
@@ -46,6 +47,14 @@ const profileStore: StateCreator<ProfileState> = (set, get) => ({
       set({ profileDetail: data });
     }
     return data;
+  },
+  async deleteProfile(profileId: string) {
+    await apiClient.delete(`/profiles/${profileId}`);
+    const { selectedProfile } = get();
+    if (selectedProfile?.id === profileId) {
+      set({ selectedProfile: null, profileDetail: null });
+    }
+    await get().fetchProfiles();
   },
 });
 

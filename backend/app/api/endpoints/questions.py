@@ -15,7 +15,7 @@ from app.schemas.question import (
     QuestionUpdate,
 )
 
-router = APIRouter(prefix="/api", tags=["questions"])
+router = APIRouter(prefix="/api/v1", tags=["questions"])
 
 
 @router.get("/quizzes/{quiz_id}/questions", response_model=List[QuestionRead])

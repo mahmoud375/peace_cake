@@ -4,12 +4,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { Question } from "../types/api";
 import { useQuizStore, type QuestionPayload, type QuizPayload } from "../store/quizStore";
 
+const DIFFICULTY_OPTIONS = ["Easy", "Medium", "Hard", "Impossible"] as const;
+
 const emptyQuestion = (): QuestionPayload => ({
   prompt: "",
   options: ["", "", ""],
   correct_index: 0,
   points: 10,
-  difficulty: "easy",
+  difficulty: DIFFICULTY_OPTIONS[0],
 });
 
 const QuizEditorPage = () => {
@@ -120,7 +122,7 @@ const QuizEditorPage = () => {
       options: [...question.options],
       correct_index: question.correct_index,
       points: question.points,
-      difficulty: question.difficulty ?? "",
+      difficulty: question.difficulty ?? DIFFICULTY_OPTIONS[0],
     });
     setEditingQuestionId(question.id);
   };
@@ -276,15 +278,19 @@ const QuizEditorPage = () => {
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "0.3rem", fontWeight: 600 }}>Difficulty</label>
-              <input
-                type="text"
-                value={questionForm.difficulty ?? ""}
+              <select
+                value={questionForm.difficulty ?? DIFFICULTY_OPTIONS[0]}
                 onChange={(event) =>
                   setQuestionForm((prev) => ({ ...prev, difficulty: event.target.value }))
                 }
-                placeholder="e.g. Easy"
                 style={{ width: "100%", padding: "0.7rem 1rem", borderRadius: 12, border: "1px solid #cbd5f5" }}
-              />
+              >
+                {DIFFICULTY_OPTIONS.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

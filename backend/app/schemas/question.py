@@ -1,9 +1,17 @@
 from __future__ import annotations
 
 from datetime import datetime
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+class DifficultyLevel(str, Enum):
+    EASY = "Easy"
+    MEDIUM = "Medium"
+    HARD = "Hard"
+    IMPOSSIBLE = "Impossible"
 
 
 class QuestionBase(BaseModel):
@@ -11,7 +19,7 @@ class QuestionBase(BaseModel):
     options: List[str] = Field(..., min_length=3, max_length=4)
     correct_index: int
     points: int = Field(..., gt=0)
-    difficulty: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
 
     @model_validator(mode="after")
     def validate_correct_index(self) -> "QuestionBase":
@@ -29,7 +37,7 @@ class QuestionUpdate(BaseModel):
     options: Optional[List[str]] = Field(default=None, min_length=3, max_length=4)
     correct_index: Optional[int] = None
     points: Optional[int] = Field(default=None, gt=0)
-    difficulty: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
 
     @model_validator(mode="after")
     def validate_indices(self) -> "QuestionUpdate":
@@ -41,7 +49,7 @@ class QuestionUpdate(BaseModel):
 
 class QuestionOrderUpdate(BaseModel):
     points: Optional[int] = Field(default=None, gt=0)
-    difficulty: Optional[str] = None
+    difficulty: Optional[DifficultyLevel] = None
 
 
 class QuestionRead(QuestionBase):
