@@ -6,6 +6,7 @@ import type {
   QuestionResolutionPayload,
   SessionCreatePayload,
   SessionRead,
+  SessionTeam,
 } from "../types/api";
 
 interface GameState {
@@ -14,6 +15,8 @@ interface GameState {
   loading: boolean;
   error: string | null;
   activeQuestionId: string | null;
+  gameState: "SETUP" | "BOARD" | "GAMEOVER";
+  winningTeam: SessionTeam | null;
   fetchConfig: () => Promise<void>;
   createSession: (payload: SessionCreatePayload) => Promise<SessionRead>;
   startQuestion: (sessionId: string, questionId: string) => Promise<SessionRead>;
@@ -22,7 +25,8 @@ interface GameState {
     questionId: string,
     payload: QuestionResolutionPayload,
   ) => Promise<SessionRead>;
-  resetSession: () => void;
+  endGameAndDetermineWinner: () => void;
+  resetGame: () => void;
 }
 
 const gameStore: StateCreator<GameState> = (set, get) => ({
@@ -31,6 +35,8 @@ const gameStore: StateCreator<GameState> = (set, get) => ({
   loading: false,
   error: null,
   activeQuestionId: null,
+  gameState: "SETUP",
+  winningTeam: null,
   async fetchConfig() {
     if (get().config) return;
     try {
@@ -45,7 +51,7 @@ const gameStore: StateCreator<GameState> = (set, get) => ({
     set({ loading: true, error: null });
     try {
       const { data } = await apiClient.post<SessionRead>("/sessions", payload);
-      set({ session: data, loading: false });
+      set({ session: data, loading: false, gameState: "BOARD", winningTeam: null });
       return data;
     } catch (error) {
       console.error(error);
@@ -86,8 +92,25 @@ const gameStore: StateCreator<GameState> = (set, get) => ({
       throw error;
     }
   },
-  resetSession() {
-    set({ session: null, activeQuestionId: null });
+  endGameAndDetermineWinner() {
+    const { session } = get();
+    if (!session || !session.teams.length) {
+      set({ gameState: "GAMEOVER", winningTeam: null });
+      return;
+    }
+    const winningTeam = session.teams.reduce<SessionTeam>((best, team) =>
+      team.score > best.score ? team : best,
+    session.teams[0]);
+    set({ gameState: "GAMEOVER", winningTeam });
+  },
+  resetGame() {
+    set({
+      session: null,
+      activeQuestionId: null,
+      winningTeam: null,
+      gameState: "SETUP",
+      error: null,
+    });
   },
 });
 

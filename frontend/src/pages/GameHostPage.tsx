@@ -28,6 +28,10 @@ const GameHostPage = () => {
     startQuestion,
     resolveQuestion,
     loading,
+    gameState,
+    winningTeam,
+    endGameAndDetermineWinner,
+    resetGame,
   } = useGameStore((state: GameState) => ({
     session: state.session,
     config: state.config,
@@ -36,6 +40,10 @@ const GameHostPage = () => {
     startQuestion: state.startQuestion,
     resolveQuestion: state.resolveQuestion,
     loading: state.loading,
+    gameState: state.gameState,
+    winningTeam: state.winningTeam,
+    endGameAndDetermineWinner: state.endGameAndDetermineWinner,
+    resetGame: state.resetGame,
   }));
 
   const minTeams = config?.min_teams ?? 2;
@@ -282,6 +290,34 @@ const GameHostPage = () => {
 
       {session && selectedQuiz && (
         <>
+          {gameState === "GAMEOVER" && (
+            <section className="card" style={{ textAlign: "center", padding: "3rem 2rem" }}>
+              <h1 style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>Game Over!</h1>
+              {winningTeam ? (
+                <>
+                  <p style={{ fontSize: "1.25rem", color: "#475569" }}>Winner</p>
+                  <h2 style={{ fontSize: "2rem", margin: 0 }}>{winningTeam.name}</h2>
+                  <p style={{ fontSize: "1.5rem", color: "#22c55e", marginTop: "0.5rem" }}>
+                    {winningTeam.score} points
+                  </p>
+                </>
+              ) : (
+                <p>No winner determined.</p>
+              )}
+              {/* TODO: [Display Confetti Animation Here] */}
+              <button
+                className="btn btn-primary"
+                style={{ marginTop: "2rem" }}
+                onClick={() => {
+                  resetGame();
+                  navigate("/dashboard");
+                }}
+              >
+                Start New Game
+              </button>
+            </section>
+          )}
+
           <section className="card" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <p style={{ margin: 0, color: "#94a3b8" }}>Hosting quiz</p>
@@ -295,9 +331,20 @@ const GameHostPage = () => {
             <div style={{ color: "#94a3b8" }}>
               Select a team before scoring. Used questions are automatically disabled.
             </div>
+            {(gameState === "BOARD" || gameState === "GAMEOVER") && (
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                <button className="btn" onClick={() => endGameAndDetermineWinner()}>
+                  End Game
+                </button>
+                <button className="btn btn-secondary" onClick={() => resetGame()}>
+                  Reset Game
+                </button>
+              </div>
+            )}
           </section>
 
-          <section className="card">
+          {gameState === "BOARD" && (
+            <section className="card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <h2 style={{ margin: 0 }}>Question board</h2>
               <span style={{ color: "#94a3b8" }}>
@@ -309,7 +356,7 @@ const GameHostPage = () => {
               {groupedQuestions.map(({ points, questions }) => (
                 <div key={points} className="question-column">
                   <div className="question-column-header">{points} pts</div>
-                  {questions.map((question) => {
+                  {questions.map((question, index) => {
                     const used = session.used_question_ids.includes(question.id);
                     const inProgress = session.current_question_id === question.id;
                     const disabled = used || (!!session.current_question_id && !inProgress);
@@ -321,7 +368,7 @@ const GameHostPage = () => {
                         onClick={() => handleQuestionClick(question)}
                         disabled={disabled}
                       >
-                        <span>{question.difficulty || "?"}</span>
+                        <span>{`${index + 1} - ${question.difficulty ?? "?"}`}</span>
                         {used && <small>Used</small>}
                         {inProgress && <small>In play</small>}
                       </button>
@@ -331,6 +378,7 @@ const GameHostPage = () => {
               ))}
             </div>
           </section>
+          )}
         </>
       )}
 
