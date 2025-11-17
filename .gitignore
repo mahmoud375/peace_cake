@@ -10,7 +10,6 @@
 /frontend/dist/
 /frontend/.vite/
 npm-debug.log
-.env
 
 # --- OS ---
 .DS_Store

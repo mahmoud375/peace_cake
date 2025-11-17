@@ -8,9 +8,7 @@ from app.db.session import create_all_tables
 
 app = FastAPI(title="Peace Cake API")
 
-origins = [
-    "http://localhost:5173",
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
