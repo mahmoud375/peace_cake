@@ -90,12 +90,12 @@ const ProfileSelectPage = () => {
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <label style={{ fontWeight: 600 }}>Create new profile</label>
+          <label style={{ fontWeight: 600 }}>Create New Level Profile</label>
           <input
             type="text"
             value={profileName}
             onChange={(event) => setProfileName(event.target.value)}
-            placeholder="e.g. Ms. Carter"
+            placeholder="e.g., Level 7"
             style={{ padding: "0.8rem 1rem", borderRadius: "999px", border: "1px solid #cbd5f5" }}
           />
           {formError && <span style={{ color: "#dc2626" }}>{formError}</span>}

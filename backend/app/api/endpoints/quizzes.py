@@ -19,13 +19,7 @@ def list_quizzes_for_profile(
     db: Session = Depends(get_db_session),
 ) -> List[QuizSummary]:
     _ensure_profile_exists(db, profile_id)
-    stmt = (
-        select(Quiz)
-        .where(Quiz.profile_id == profile_id)
-        .options(selectinload(Quiz.questions))
-        .order_by(Quiz.created_at)
-    )
-    quizzes = db.scalars(stmt).all()
+    quizzes = _fetch_quizzes_for_profile(db, profile_id)
     return [
         QuizSummary(
             id=quiz.id,
@@ -119,6 +113,16 @@ def duplicate_quiz(quiz_id: str, db: Session = Depends(get_db_session)) -> QuizR
 def _ensure_profile_exists(db: Session, profile_id: str) -> None:
     if db.get(Profile, profile_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+
+
+def _fetch_quizzes_for_profile(db: Session, profile_id: str) -> List[Quiz]:
+    stmt = (
+        select(Quiz)
+        .where(Quiz.profile_id == profile_id)
+        .options(selectinload(Quiz.questions))
+        .order_by(Quiz.created_at)
+    )
+    return db.scalars(stmt).all()
 
 
 def _fetch_quiz_with_questions(db: Session, quiz_id: str) -> Quiz:

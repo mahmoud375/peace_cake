@@ -404,7 +404,16 @@ const GameHostPage = () => {
             {revealed && (
               <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <div className="timer-display">
-                  {timeLeft > 0 ? `${timeLeft}s` : "⏰ Time's up!"}
+                  {stealMode ? (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.25rem" }}>
+                      <span style={{ fontWeight: 700, letterSpacing: "0.1em" }}>STEAL</span>
+                      <span style={{ fontSize: "2rem", color: "#dc2626", fontWeight: 700 }}>
+                        {stealTimeLeft > 0 ? stealTimeLeft : 0}
+                      </span>
+                    </div>
+                  ) : (
+                    <>{timeLeft > 0 ? `${timeLeft}s` : "⏰ Time's up!"}</>
+                  )}
                 </div>
                 <p style={{ fontWeight: 600 }}>{modalQuestion.prompt}</p>
                 {optionsVisible ? (
