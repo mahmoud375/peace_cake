@@ -2,16 +2,17 @@ import type { SessionTeam } from "../types/api";
 
 interface ScoreboardProps {
   teams: SessionTeam[];
-  activeTeamId?: string | null;
+  currentTurnIndex: number;
+  isGameOver?: boolean;
   onSelectTeam?: (teamId: string) => void;
 }
 
-const Scoreboard = ({ teams, activeTeamId, onSelectTeam }: ScoreboardProps) => {
+const Scoreboard = ({ teams, currentTurnIndex, isGameOver = false, onSelectTeam }: ScoreboardProps) => {
   if (!teams.length) return null;
   return (
     <div className="scoreboard">
-      {teams.map((team) => {
-        const isActive = activeTeamId === team.id;
+      {teams.map((team, index) => {
+        const isActive = !isGameOver && index === currentTurnIndex;
         return (
           <button
             key={team.id}

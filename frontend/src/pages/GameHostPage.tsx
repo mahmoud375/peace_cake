@@ -74,13 +74,12 @@ const GameHostPage = () => {
   }, [fetchConfig]);
 
   useEffect(() => {
-    if (session?.teams?.length) {
-      setSelectedTeamId((prev) => {
-        if (prev && session.teams.some((team) => team.id === prev)) {
-          return prev;
-        }
-        return session.teams[0].id;
-      });
+    if (session?.teams?.length && session.current_turn_index !== undefined) {
+      // Auto-select the team based on server's current_turn_index
+      const activeTeam = session.teams[session.current_turn_index];
+      if (activeTeam) {
+        setSelectedTeamId(activeTeam.id);
+      }
     }
   }, [session]);
 
@@ -325,7 +324,8 @@ const GameHostPage = () => {
             </div>
             <Scoreboard
               teams={session.teams}
-              activeTeamId={selectedTeamId}
+              currentTurnIndex={session.current_turn_index}
+              isGameOver={gameState === "GAMEOVER"}
               onSelectTeam={setSelectedTeamId}
             />
             <div style={{ color: "#94a3b8" }}>
@@ -345,39 +345,39 @@ const GameHostPage = () => {
 
           {gameState === "BOARD" && (
             <section className="card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-              <h2 style={{ margin: 0 }}>Question board</h2>
-              <span style={{ color: "#94a3b8" }}>
-                {session.used_question_ids.length}/{selectedQuiz.questions.length} used
-              </span>
-            </div>
-            {questionError && <p style={{ color: "#dc2626" }}>{questionError}</p>}
-            <div className="board-grid">
-              {groupedQuestions.map(({ points, questions }) => (
-                <div key={points} className="question-column">
-                  <div className="question-column-header">{points} pts</div>
-                  {questions.map((question, index) => {
-                    const used = session.used_question_ids.includes(question.id);
-                    const inProgress = session.current_question_id === question.id;
-                    const disabled = used || (!!session.current_question_id && !inProgress);
-                    return (
-                      <button
-                        key={question.id}
-                        type="button"
-                        className={`question-cell${used ? " used" : ""}${inProgress ? " active" : ""}`}
-                        onClick={() => handleQuestionClick(question)}
-                        disabled={disabled}
-                      >
-                        <span>{`${index + 1} - ${question.difficulty ?? "?"}`}</span>
-                        {used && <small>Used</small>}
-                        {inProgress && <small>In play</small>}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </section>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                <h2 style={{ margin: 0 }}>Question board</h2>
+                <span style={{ color: "#94a3b8" }}>
+                  {session.used_question_ids.length}/{selectedQuiz.questions.length} used
+                </span>
+              </div>
+              {questionError && <p style={{ color: "#dc2626" }}>{questionError}</p>}
+              <div className="board-grid">
+                {groupedQuestions.map(({ points, questions }) => (
+                  <div key={points} className="question-column">
+                    <div className="question-column-header">{points} pts</div>
+                    {questions.map((question, index) => {
+                      const used = session.used_question_ids.includes(question.id);
+                      const inProgress = session.current_question_id === question.id;
+                      const disabled = used || (!!session.current_question_id && !inProgress);
+                      return (
+                        <button
+                          key={question.id}
+                          type="button"
+                          className={`question-cell${used ? " used" : ""}${inProgress ? " active" : ""}`}
+                          onClick={() => handleQuestionClick(question)}
+                          disabled={disabled}
+                        >
+                          <span>{`${index + 1} - ${question.difficulty ?? "?"}`}</span>
+                          {used && <small>Used</small>}
+                          {inProgress && <small>In play</small>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
         </>
       )}

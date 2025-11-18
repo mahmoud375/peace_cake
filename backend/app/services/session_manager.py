@@ -24,6 +24,7 @@ class SessionState:
     used_question_ids: set[str] = field(default_factory=set)
     current_question_id: Optional[str] = None
     question_started_at: Optional[datetime] = None
+    current_turn_index: int = 0
 
 
 class SessionManager:
@@ -87,6 +88,10 @@ class SessionManager:
             state.used_question_ids.add(question_id)
             state.current_question_id = None
             state.question_started_at = None
+            
+            # Auto-increment turn to next team (wraps around)
+            state.current_turn_index = (state.current_turn_index + 1) % len(state.teams)
+            
             return state
 
     def _handle_steal(

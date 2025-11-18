@@ -52,6 +52,7 @@ export interface SessionRead {
   used_question_ids: string[];
   current_question_id?: string | null;
   question_started_at?: string | null;
+  current_turn_index: number;
 }
 
 export interface SessionCreatePayload {

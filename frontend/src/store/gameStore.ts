@@ -85,6 +85,14 @@ const gameStore: StateCreator<GameState> = (set, get) => ({
         payload,
       );
       set({ session: data, loading: false, activeQuestionId: null });
+
+      // Auto-trigger game over if all questions are used
+      const quizStore = await import('./quizStore').then(m => m.useQuizStore.getState());
+      const selectedQuiz = quizStore.selectedQuiz;
+      if (selectedQuiz && data.used_question_ids.length >= selectedQuiz.questions.length) {
+        get().endGameAndDetermineWinner();
+      }
+
       return data;
     } catch (error) {
       console.error(error);
@@ -100,7 +108,7 @@ const gameStore: StateCreator<GameState> = (set, get) => ({
     }
     const winningTeam = session.teams.reduce<SessionTeam>((best, team) =>
       team.score > best.score ? team : best,
-    session.teams[0]);
+      session.teams[0]);
     set({ gameState: "GAMEOVER", winningTeam });
   },
   resetGame() {

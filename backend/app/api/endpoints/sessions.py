@@ -23,6 +23,7 @@ def _session_to_schema(state: SessionState) -> SessionRead:
         used_question_ids=list(state.used_question_ids),
         current_question_id=state.current_question_id,
         question_started_at=state.question_started_at,
+        current_turn_index=state.current_turn_index,
     )
 
 
