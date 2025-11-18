@@ -15,6 +15,7 @@ const ProfileSelectPage = () => {
   }));
   const fetchProfiles = useProfileStore((state: ProfileState) => state.fetchProfiles);
   const createProfile = useProfileStore((state: ProfileState) => state.createProfile);
+  const renameProfile = useProfileStore((state: ProfileState) => state.renameProfile);
   const selectProfile = useProfileStore((state: ProfileState) => state.selectProfile);
   const deleteProfile = useProfileStore((state: ProfileState) => state.deleteProfile);
 
@@ -82,8 +83,23 @@ const ProfileSelectPage = () => {
               <button
                 type="button"
                 className="btn"
+                style={{ padding: "0.5rem 0.75rem", background: "#dbeafe", color: "#1e40af" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newName = window.prompt("Enter new profile name:", profile.name);
+                  if (newName && newName.trim() && newName.trim() !== profile.name) {
+                    renameProfile(profile.id, newName.trim()).catch((error) => console.error(error));
+                  }
+                }}
+              >
+                ✏️
+              </button>
+              <button
+                type="button"
+                className="btn"
                 style={{ padding: "0.5rem 0.75rem", background: "#fee2e2", color: "#dc2626" }}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   const confirmed = window.confirm(
                     "Are you sure you want to delete this profile and all its associated data?",
                   );

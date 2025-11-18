@@ -68,6 +68,29 @@ def get_profile(profile_id: str, db: Session = Depends(get_db_session)) -> Profi
     )
 
 
+@router.patch("/{profile_id}", response_model=ProfileRead)
+def update_profile(
+    profile_id: str,
+    profile_in: ProfileCreate,
+    db: Session = Depends(get_db_session),
+) -> ProfileRead:
+    profile = db.get(Profile, profile_id)
+    if profile is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+
+    profile.name = profile_in.name.strip()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Profile name already exists",
+        ) from exc
+    db.refresh(profile)
+    return profile  # type: ignore[return-value]
+
+
 @router.delete("/{profile_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_profile(profile_id: str, db: Session = Depends(get_db_session)) -> Response:
     profile = db.get(Profile, profile_id)

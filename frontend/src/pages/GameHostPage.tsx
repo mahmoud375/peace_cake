@@ -27,9 +27,10 @@ const GameHostPage = () => {
     createSession,
     startQuestion,
     resolveQuestion,
+    setActiveTeam,
     loading,
     gameState,
-    winningTeam,
+    winningTeams,
     endGameAndDetermineWinner,
     resetGame,
   } = useGameStore((state: GameState) => ({
@@ -39,9 +40,10 @@ const GameHostPage = () => {
     createSession: state.createSession,
     startQuestion: state.startQuestion,
     resolveQuestion: state.resolveQuestion,
+    setActiveTeam: state.setActiveTeam,
     loading: state.loading,
     gameState: state.gameState,
-    winningTeam: state.winningTeam,
+    winningTeams: state.winningTeams,
     endGameAndDetermineWinner: state.endGameAndDetermineWinner,
     resetGame: state.resetGame,
   }));
@@ -244,6 +246,15 @@ const GameHostPage = () => {
     });
   };
 
+  const handleTeamClick = async (teamIndex: number) => {
+    if (!session || gameState === "GAMEOVER") return;
+    try {
+      await setActiveTeam(session.id, teamIndex);
+    } catch (error) {
+      console.error("Failed to set active team:", error);
+    }
+  };
+
   const optionsVisible = revealed && timeLeft > 0;
   const stealTeams = session?.teams.filter((team) => team.id !== pendingIncorrectTeamId) ?? [];
 
@@ -292,13 +303,32 @@ const GameHostPage = () => {
           {gameState === "GAMEOVER" && (
             <section className="card" style={{ textAlign: "center", padding: "3rem 2rem" }}>
               <h1 style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>Game Over!</h1>
-              {winningTeam ? (
+              {winningTeams.length > 0 ? (
                 <>
-                  <p style={{ fontSize: "1.25rem", color: "#475569" }}>Winner</p>
-                  <h2 style={{ fontSize: "2rem", margin: 0 }}>{winningTeam.name}</h2>
-                  <p style={{ fontSize: "1.5rem", color: "#22c55e", marginTop: "0.5rem" }}>
-                    {winningTeam.score} points
-                  </p>
+                  {winningTeams.length === 1 ? (
+                    <>
+                      <p style={{ fontSize: "1.25rem", color: "#475569" }}>Winner</p>
+                      <h2 style={{ fontSize: "2rem", margin: 0 }}>{winningTeams[0].name}</h2>
+                      <p style={{ fontSize: "1.5rem", color: "#22c55e", marginTop: "0.5rem" }}>
+                        {winningTeams[0].score} points
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p style={{ fontSize: "1.5rem", color: "#f59e0b", fontWeight: 700 }}>It's a Tie!</p>
+                      <h2 style={{ fontSize: "1.75rem", margin: "1rem 0" }}>
+                        {winningTeams.map((team, index) => (
+                          <span key={team.id}>
+                            {team.name}
+                            {index < winningTeams.length - 1 && " & "}
+                          </span>
+                        ))}
+                      </h2>
+                      <p style={{ fontSize: "1.5rem", color: "#22c55e", marginTop: "0.5rem" }}>
+                        {winningTeams[0].score} points each
+                      </p>
+                    </>
+                  )}
                 </>
               ) : (
                 <p>No winner determined.</p>
@@ -326,6 +356,7 @@ const GameHostPage = () => {
               teams={session.teams}
               currentTurnIndex={session.current_turn_index}
               isGameOver={gameState === "GAMEOVER"}
+              onTeamClick={handleTeamClick}
               onSelectTeam={setSelectedTeamId}
             />
             <div style={{ color: "#94a3b8" }}>

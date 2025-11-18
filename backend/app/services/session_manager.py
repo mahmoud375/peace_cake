@@ -113,6 +113,14 @@ class SessionManager:
             steal_team.score += steal_points
         return state
 
+    def set_active_turn(self, session_id: str, team_index: int) -> SessionState:
+        with self._lock:
+            state = self._require_session(session_id)
+            if team_index < 0 or team_index >= len(state.teams):
+                raise ValueError(f"Invalid team index: {team_index}")
+            state.current_turn_index = team_index
+            return state
+
     def _require_session(self, session_id: str) -> SessionState:
         state = self._sessions.get(session_id)
         if not state:

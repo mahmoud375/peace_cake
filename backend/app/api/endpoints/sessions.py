@@ -113,3 +113,19 @@ def resolve_question(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     return _resolve_session(state)
+
+
+@router.post(
+    "/{session_id}/turn/{team_index}",
+    response_model=SessionRead,
+)
+def set_active_turn(
+    session_id: str,
+    team_index: int,
+    manager: SessionManager = Depends(get_session_manager),
+) -> SessionRead:
+    try:
+        state = manager.set_active_turn(session_id, team_index)
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    return _session_to_schema(state)

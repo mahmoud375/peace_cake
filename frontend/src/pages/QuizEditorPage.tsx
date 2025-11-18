@@ -269,7 +269,7 @@ const QuizEditorPage = () => {
                 }
                 style={{ width: "100%", padding: "0.7rem 1rem", borderRadius: 12, border: "1px solid #cbd5f5" }}
               >
-                {[10, 20, 30, 40, 50].map((value) => (
+                {[10, 20, 30, 40].map((value) => (
                   <option key={value} value={value}>
                     {value}
                   </option>

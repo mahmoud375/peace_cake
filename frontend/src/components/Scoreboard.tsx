@@ -4,10 +4,11 @@ interface ScoreboardProps {
   teams: SessionTeam[];
   currentTurnIndex: number;
   isGameOver?: boolean;
+  onTeamClick?: (teamIndex: number) => void;
   onSelectTeam?: (teamId: string) => void;
 }
 
-const Scoreboard = ({ teams, currentTurnIndex, isGameOver = false, onSelectTeam }: ScoreboardProps) => {
+const Scoreboard = ({ teams, currentTurnIndex, isGameOver = false, onTeamClick, onSelectTeam }: ScoreboardProps) => {
   if (!teams.length) return null;
   return (
     <div className="scoreboard">
@@ -18,8 +19,24 @@ const Scoreboard = ({ teams, currentTurnIndex, isGameOver = false, onSelectTeam 
             key={team.id}
             type="button"
             className={`score-card${isActive ? " active" : ""}`}
-            style={{ cursor: onSelectTeam ? "pointer" : "default" }}
-            onClick={() => onSelectTeam?.(team.id)}
+            style={{
+              cursor: onTeamClick && !isGameOver ? "pointer" : "default",
+              transition: "all 0.2s ease",
+            }}
+            onClick={() => {
+              if (onTeamClick && !isGameOver) onTeamClick(index);
+              if (onSelectTeam) onSelectTeam(team.id);
+            }}
+            onMouseEnter={(e) => {
+              if (onTeamClick && !isGameOver && !isActive) {
+                e.currentTarget.style.backgroundColor = "#f8fafc";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.backgroundColor = "#fff";
+              }
+            }}
           >
             <div style={{ fontSize: "0.9rem", textTransform: "uppercase", color: "#94a3b8" }}>
               Team

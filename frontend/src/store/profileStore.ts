@@ -12,6 +12,7 @@ interface ProfileState {
   isGameInitialized: boolean;
   fetchProfiles: () => Promise<void>;
   createProfile: (name: string) => Promise<Profile>;
+  renameProfile: (profileId: string, newName: string) => Promise<void>;
   selectProfile: (profile: Profile | null) => void;
   loadProfileDetail: (profileId: string) => Promise<ProfileDetail>;
   deleteProfile: (profileId: string) => Promise<void>;
@@ -41,6 +42,10 @@ const profileStore: StateCreator<ProfileState> = (set, get) => ({
     set((state) => ({ profiles: [...state.profiles, data] }));
     set({ selectedProfile: data });
     return data;
+  },
+  async renameProfile(profileId: string, newName: string) {
+    await apiClient.patch<Profile>(`/profiles/${profileId}`, { name: newName });
+    await get().fetchProfiles();
   },
   selectProfile(profile: Profile | null) {
     set({ selectedProfile: profile, profileDetail: null });

@@ -16,7 +16,7 @@ interface GameState {
   error: string | null;
   activeQuestionId: string | null;
   gameState: "SETUP" | "BOARD" | "GAMEOVER";
-  winningTeam: SessionTeam | null;
+  winningTeams: SessionTeam[];
   fetchConfig: () => Promise<void>;
   createSession: (payload: SessionCreatePayload) => Promise<SessionRead>;
   startQuestion: (sessionId: string, questionId: string) => Promise<SessionRead>;
@@ -25,6 +25,7 @@ interface GameState {
     questionId: string,
     payload: QuestionResolutionPayload,
   ) => Promise<SessionRead>;
+  setActiveTeam: (sessionId: string, teamIndex: number) => Promise<SessionRead>;
   endGameAndDetermineWinner: () => void;
   resetGame: () => void;
 }
@@ -36,7 +37,7 @@ const gameStore: StateCreator<GameState> = (set, get) => ({
   error: null,
   activeQuestionId: null,
   gameState: "SETUP",
-  winningTeam: null,
+  winningTeams: [],
   async fetchConfig() {
     if (get().config) return;
     try {
@@ -51,7 +52,7 @@ const gameStore: StateCreator<GameState> = (set, get) => ({
     set({ loading: true, error: null });
     try {
       const { data } = await apiClient.post<SessionRead>("/sessions", payload);
-      set({ session: data, loading: false, gameState: "BOARD", winningTeam: null });
+      set({ session: data, loading: false, gameState: "BOARD", winningTeams: [] });
       return data;
     } catch (error) {
       console.error(error);
@@ -100,22 +101,40 @@ const gameStore: StateCreator<GameState> = (set, get) => ({
       throw error;
     }
   },
+  async setActiveTeam(sessionId: string, teamIndex: number) {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await apiClient.post<SessionRead>(
+        `/sessions/${sessionId}/turn/${teamIndex}`,
+      );
+      set({ session: data, loading: false });
+      return data;
+    } catch (error) {
+      console.error(error);
+      set({ loading: false, error: "Unable to set active team" });
+      throw error;
+    }
+  },
   endGameAndDetermineWinner() {
     const { session } = get();
     if (!session || !session.teams.length) {
-      set({ gameState: "GAMEOVER", winningTeam: null });
+      set({ gameState: "GAMEOVER", winningTeams: [] });
       return;
     }
-    const winningTeam = session.teams.reduce<SessionTeam>((best, team) =>
-      team.score > best.score ? team : best,
-      session.teams[0]);
-    set({ gameState: "GAMEOVER", winningTeam });
+
+    // Find the maximum score
+    const maxScore = Math.max(...session.teams.map(team => team.score));
+
+    // Find all teams with the maximum score
+    const winners = session.teams.filter(team => team.score === maxScore);
+
+    set({ gameState: "GAMEOVER", winningTeams: winners });
   },
   resetGame() {
     set({
       session: null,
       activeQuestionId: null,
-      winningTeam: null,
+      winningTeams: [],
       gameState: "SETUP",
       error: null,
     });
