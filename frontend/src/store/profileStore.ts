@@ -9,11 +9,14 @@ interface ProfileState {
   profileDetail: ProfileDetail | null;
   loading: boolean;
   error: string | null;
+  isGameInitialized: boolean;
   fetchProfiles: () => Promise<void>;
   createProfile: (name: string) => Promise<Profile>;
   selectProfile: (profile: Profile | null) => void;
   loadProfileDetail: (profileId: string) => Promise<ProfileDetail>;
   deleteProfile: (profileId: string) => Promise<void>;
+  initializeGame: () => void;
+  uninitializeGame: () => void;
 }
 
 const profileStore: StateCreator<ProfileState> = (set, get) => ({
@@ -22,6 +25,7 @@ const profileStore: StateCreator<ProfileState> = (set, get) => ({
   profileDetail: null,
   loading: false,
   error: null,
+  isGameInitialized: false,
   async fetchProfiles() {
     set({ loading: true, error: null });
     try {
@@ -55,6 +59,12 @@ const profileStore: StateCreator<ProfileState> = (set, get) => ({
       set({ selectedProfile: null, profileDetail: null });
     }
     await get().fetchProfiles();
+  },
+  initializeGame() {
+    set({ isGameInitialized: true });
+  },
+  uninitializeGame() {
+    set({ isGameInitialized: false, selectedProfile: null, profileDetail: null });
   },
 });
 

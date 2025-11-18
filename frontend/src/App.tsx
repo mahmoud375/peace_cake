@@ -3,17 +3,26 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import DashboardPage from "./pages/DashboardPage";
 import GameHostPage from "./pages/GameHostPage";
+import LandingPage from "./pages/LandingPage";
 import ProfileSelectPage from "./pages/ProfileSelectPage";
 import QuizEditorPage from "./pages/QuizEditorPage";
 import { useProfileStore } from "./store/profileStore";
 
 const App = () => {
-  const selectedProfile = useProfileStore((state) => state.selectedProfile);
-  const fetchProfiles = useProfileStore((state) => state.fetchProfiles);
+  const { selectedProfile, fetchProfiles, isGameInitialized } = useProfileStore((state) => ({
+    selectedProfile: state.selectedProfile,
+    fetchProfiles: state.fetchProfiles,
+    isGameInitialized: state.isGameInitialized,
+  }));
 
   useEffect(() => {
+    if (!isGameInitialized) return;
     fetchProfiles().catch(() => null);
-  }, [fetchProfiles]);
+  }, [fetchProfiles, isGameInitialized]);
+
+  if (!isGameInitialized) {
+    return <LandingPage />;
+  }
 
   return (
     <BrowserRouter>

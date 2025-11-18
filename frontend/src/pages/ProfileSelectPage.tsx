@@ -6,11 +6,12 @@ import type { Profile } from "../types/api";
 
 const ProfileSelectPage = () => {
   const navigate = useNavigate();
-  const { profiles, selectedProfile, loading, error } = useProfileStore((state: ProfileState) => ({
+  const { profiles, selectedProfile, loading, error, uninitializeGame } = useProfileStore((state: ProfileState) => ({
     profiles: state.profiles,
     selectedProfile: state.selectedProfile,
     loading: state.loading,
     error: state.error,
+    uninitializeGame: state.uninitializeGame,
   }));
   const fetchProfiles = useProfileStore((state: ProfileState) => state.fetchProfiles);
   const createProfile = useProfileStore((state: ProfileState) => state.createProfile);
@@ -48,6 +49,14 @@ const ProfileSelectPage = () => {
 
   return (
     <div className="container">
+      <button
+        type="button"
+        className="btn"
+        style={{ margin: "1rem auto", display: "block" }}
+        onClick={() => uninitializeGame()}
+      >
+        ← Back to Welcome
+      </button>
       <div className="card" style={{ maxWidth: 640, margin: "3rem auto" }}>
         <h1 style={{ marginBottom: "0.5rem" }}>Peace Cake</h1>
         <p style={{ color: "#64748b", marginBottom: "2rem" }}>

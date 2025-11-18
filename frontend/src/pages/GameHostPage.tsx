@@ -384,7 +384,17 @@ const GameHostPage = () => {
 
       {isModalOpen && modalQuestion && session && (
         <div className="modal-overlay">
-          <div className="modal">
+          <div
+            className="modal"
+            style={{
+              width: "90vw",
+              maxWidth: "1100px",
+              minHeight: "70vh",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.5rem",
+            }}
+          >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h2 style={{ margin: 0 }}>{modalQuestion.points} pts — {modalQuestion.difficulty || "Question"}</h2>
               <button className="btn" onClick={closeModal}>
@@ -415,11 +425,38 @@ const GameHostPage = () => {
                     <>{timeLeft > 0 ? `${timeLeft}s` : "⏰ Time's up!"}</>
                   )}
                 </div>
-                <p style={{ fontWeight: 600 }}>{modalQuestion.prompt}</p>
+                <p
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "2.75rem",
+                    lineHeight: 1.2,
+                    margin: "1rem 0",
+                    padding: "0.5rem 0",
+                    textAlign: "center",
+                  }}
+                >
+                  {modalQuestion.prompt}
+                </p>
                 {optionsVisible ? (
-                  <ul style={{ paddingLeft: "1.25rem" }}>
+                  <ul
+                    style={{
+                      paddingLeft: "2rem",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.75rem",
+                    }}
+                  >
                     {modalQuestion.options.map((option, index) => (
-                      <li key={index}>{option}</li>
+                      <li
+                        key={index}
+                        style={{
+                          fontSize: "1.75rem",
+                          fontWeight: 600,
+                          padding: "0.5rem 0",
+                        }}
+                      >
+                        {option}
+                      </li>
                     ))}
                   </ul>
                 ) : (
