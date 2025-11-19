@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import type { SessionTeam } from "../types/api";
 
 interface ScoreboardProps {
@@ -15,13 +16,15 @@ const Scoreboard = ({ teams, currentTurnIndex, isGameOver = false, onTeamClick, 
       {teams.map((team, index) => {
         const isActive = !isGameOver && index === currentTurnIndex;
         return (
-          <button
+          <motion.button
             key={team.id}
             type="button"
             className={`score-card${isActive ? " active" : ""}`}
+            animate={{ scale: isActive ? 1.05 : 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               cursor: onTeamClick && !isGameOver ? "pointer" : "default",
-              transition: "all 0.2s ease",
+              // transition: "all 0.2s ease", // Handled by framer-motion
             }}
             onClick={() => {
               if (onTeamClick && !isGameOver) onTeamClick(index);
@@ -45,7 +48,7 @@ const Scoreboard = ({ teams, currentTurnIndex, isGameOver = false, onTeamClick, 
             <div style={{ marginTop: "0.75rem", fontSize: "2rem", fontWeight: 800 }}>
               {team.score}
             </div>
-          </button>
+          </motion.button>
         );
       })}
     </div>

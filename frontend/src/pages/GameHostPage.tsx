@@ -1,6 +1,10 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import useSound from "use-sound";
+import { motion } from "framer-motion";
+import Confetti from "react-confetti";
 
+import { EffectTrigger } from "../components/EffectTrigger";
 import Scoreboard from "../components/Scoreboard";
 import type { Question } from "../types/api";
 import { useGameStore, type GameState } from "../store/gameStore";
@@ -48,6 +52,12 @@ const GameHostPage = () => {
     resetGame: state.resetGame,
   }));
 
+  // Sound effects
+  const [playCorrect] = useSound("/sounds/correct.mp3", { volume: 0.5 });
+  const [playWrong] = useSound("/sounds/wrong.mp3", { volume: 0.5 });
+  const [playTimeout] = useSound("/sounds/timeout.mp3", { volume: 0.5 });
+  const [playWin] = useSound("/sounds/win.mp3", { volume: 0.5 });
+
   const minTeams = config?.min_teams ?? 2;
   const maxTeams = config?.max_teams ?? 4;
 
@@ -88,10 +98,13 @@ const GameHostPage = () => {
   useEffect(() => {
     if (!revealed || timeLeft <= 0) return;
     const interval = setInterval(() => {
-      setTimeLeft((prev) => Math.max(prev - 1, 0));
+      setTimeLeft((prev) => {
+        if (prev === 1) playTimeout();
+        return Math.max(prev - 1, 0);
+      });
     }, 1000);
     return () => clearInterval(interval);
-  }, [revealed, timeLeft]);
+  }, [revealed, timeLeft, playTimeout]);
 
   useEffect(() => {
     if (!stealMode || stealTimeLeft <= 0) return;
@@ -213,6 +226,7 @@ const GameHostPage = () => {
       setQuestionError("Select a team first");
       return;
     }
+    playCorrect();
     finishResolution({ team_id: selectedTeamId, outcome: "correct" });
   };
 
@@ -221,6 +235,7 @@ const GameHostPage = () => {
       setQuestionError("Select a team first");
       return;
     }
+    playWrong();
     setPendingIncorrectTeamId(selectedTeamId);
     setStealMode(true);
     setStealTeamId(null);
@@ -301,14 +316,21 @@ const GameHostPage = () => {
       {session && selectedQuiz && (
         <>
           {gameState === "GAMEOVER" && (
-            <section className="card" style={{ textAlign: "center", padding: "3rem 2rem" }}>
+            <section className="card" style={{ textAlign: "center", padding: "3rem 2rem", position: "relative", overflow: "hidden" }}>
+              <Confetti recycle={false} numberOfPieces={500} />
               <h1 style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>Game Over!</h1>
               {winningTeams.length > 0 ? (
                 <>
                   {winningTeams.length === 1 ? (
                     <>
                       <p style={{ fontSize: "1.25rem", color: "#475569" }}>Winner</p>
-                      <h2 style={{ fontSize: "2rem", margin: 0 }}>{winningTeams[0].name}</h2>
+                      <motion.div
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1.2, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 10 }}
+                      >
+                        <h2 style={{ fontSize: "3rem", margin: 0, color: "#22c55e" }}>{winningTeams[0].name}</h2>
+                      </motion.div>
                       <p style={{ fontSize: "1.5rem", color: "#22c55e", marginTop: "0.5rem" }}>
                         {winningTeams[0].score} points
                       </p>
@@ -333,7 +355,8 @@ const GameHostPage = () => {
               ) : (
                 <p>No winner determined.</p>
               )}
-              {/* TODO: [Display Confetti Animation Here] */}
+              {/* Confetti is now handled above */}
+              <EffectTrigger playWin={playWin} />
               <button
                 className="btn btn-primary"
                 style={{ marginTop: "2rem" }}
@@ -414,9 +437,16 @@ const GameHostPage = () => {
       )}
 
       {isModalOpen && modalQuestion && session && (
-        <div className="modal-overlay">
-          <div
+        <motion.div
+          className="modal-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <motion.div
             className="modal"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", duration: 0.5 }}
             style={{
               width: "90vw",
               maxWidth: "1100px",
@@ -555,8 +585,8 @@ const GameHostPage = () => {
                 {questionError && <p style={{ color: "#dc2626" }}>{questionError}</p>}
               </div>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );
