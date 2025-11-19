@@ -37,6 +37,8 @@ const GameHostPage = () => {
     winningTeams,
     endGameAndDetermineWinner,
     resetGame,
+    globalVolume,
+    setGlobalVolume,
   } = useGameStore((state: GameState) => ({
     session: state.session,
     config: state.config,
@@ -50,13 +52,23 @@ const GameHostPage = () => {
     winningTeams: state.winningTeams,
     endGameAndDetermineWinner: state.endGameAndDetermineWinner,
     resetGame: state.resetGame,
+    globalVolume: state.globalVolume,
+    setGlobalVolume: state.setGlobalVolume,
   }));
 
   // Sound effects
-  const [playCorrect] = useSound("/sounds/correct.mp3", { volume: 0.5 });
-  const [playWrong] = useSound("/sounds/wrong.mp3", { volume: 0.5 });
-  const [playTimeout] = useSound("/sounds/timeout.mp3", { volume: 0.5 });
-  const [playWin] = useSound("/sounds/win.mp3", { volume: 0.5 });
+  const [playCorrect] = useSound("/sounds/correct.mp3", { volume: globalVolume });
+  const [playWrong] = useSound("/sounds/wrong.mp3", { volume: globalVolume });
+  const [playTimeout] = useSound("/sounds/timeout.mp3", { volume: globalVolume });
+  const [playWin] = useSound("/sounds/win.mp3", { volume: globalVolume });
+  const [playClick] = useSound("/sounds/click.mp3", { volume: globalVolume });
+  const [playTie] = useSound("/sounds/tie.mp3", { volume: globalVolume });
+  const [playIntro] = useSound("/sounds/intro.mp3", { volume: globalVolume });
+  const [playTick] = useSound("/sounds/tick.mp3", { volume: globalVolume });
+  const [playThinking, { stop: stopThinking }] = useSound("/sounds/thinking.mp3", {
+    loop: true,
+    volume: globalVolume * 0.5,
+  });
 
   const minTeams = config?.min_teams ?? 2;
   const maxTeams = config?.max_teams ?? 4;
@@ -99,20 +111,27 @@ const GameHostPage = () => {
     if (!revealed || timeLeft <= 0) return;
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev === 1) playTimeout();
+        if (prev - 1 <= 5 && prev - 1 > 0) playTick();
+        if (prev === 1) {
+          playTimeout();
+          stopThinking();
+        }
         return Math.max(prev - 1, 0);
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [revealed, timeLeft, playTimeout]);
+  }, [revealed, timeLeft, playTimeout, playTick, stopThinking]);
 
   useEffect(() => {
     if (!stealMode || stealTimeLeft <= 0) return;
     const interval = setInterval(() => {
-      setStealTimeLeft((prev) => Math.max(prev - 1, 0));
+      setStealTimeLeft((prev) => {
+        if (prev - 1 <= 5 && prev - 1 > 0) playTick();
+        return Math.max(prev - 1, 0);
+      });
     }, 1000);
     return () => clearInterval(interval);
-  }, [stealMode, stealTimeLeft]);
+  }, [stealMode, stealTimeLeft, playTick]);
 
   const groupedQuestions = useMemo(() => {
     if (!selectedQuiz) return [];
@@ -131,6 +150,7 @@ const GameHostPage = () => {
   }, [selectedQuiz]);
 
   const handleTeamChange = (index: number, value: string) => {
+    playClick();
     setTeamInputs((prev) => prev.map((name, idx) => (idx === index ? value : name)));
   };
 
@@ -155,6 +175,8 @@ const GameHostPage = () => {
     setTeamError(null);
     try {
       await createSession({ quiz_id: quizId, teams: trimmed.map((name) => ({ name })) });
+      playClick();
+      playIntro();
     } catch (error) {
       console.error(error);
       setTeamError("Unable to start session");
@@ -183,6 +205,7 @@ const GameHostPage = () => {
   };
 
   const closeModal = () => {
+    stopThinking();
     setModalQuestion(null);
     setIsModalOpen(false);
     setRevealed(false);
@@ -199,6 +222,7 @@ const GameHostPage = () => {
     try {
       await startQuestion(session.id, modalQuestion.id);
       setRevealed(true);
+      playThinking();
       setTimeLeft(config?.primary_timer_seconds ?? 20);
     } catch (error) {
       console.error(error);
@@ -222,6 +246,8 @@ const GameHostPage = () => {
   };
 
   const handleCorrect = () => {
+    playClick();
+    stopThinking();
     if (!selectedTeamId) {
       setQuestionError("Select a team first");
       return;
@@ -231,6 +257,8 @@ const GameHostPage = () => {
   };
 
   const handleIncorrect = () => {
+    playClick();
+    stopThinking();
     if (!selectedTeamId) {
       setQuestionError("Select a team first");
       return;
@@ -278,6 +306,20 @@ const GameHostPage = () => {
       <button className="btn" onClick={() => navigate("/dashboard")}>
         ← Back to dashboard
       </button>
+
+      {/* Volume Control */}
+      <div style={{ position: "absolute", top: "1rem", right: "1rem", display: "flex", alignItems: "center", gap: "0.5rem", background: "white", padding: "0.5rem 1rem", borderRadius: "999px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+        <span style={{ fontSize: "1.2rem" }}>🔊</span>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          value={globalVolume}
+          onChange={(e) => setGlobalVolume(parseFloat(e.target.value))}
+          style={{ width: "100px", cursor: "pointer" }}
+        />
+      </div>
 
       {!session && (
         <section className="card">
@@ -356,11 +398,13 @@ const GameHostPage = () => {
                 <p>No winner determined.</p>
               )}
               {/* Confetti is now handled above */}
-              <EffectTrigger playWin={playWin} />
+              <EffectTrigger playWin={playWin} playTie={playTie} isTie={winningTeams.length > 1} />
               <button
                 className="btn btn-primary"
                 style={{ marginTop: "2rem" }}
                 onClick={() => {
+                  playClick();
+                  stopThinking();
                   resetGame();
                   navigate("/dashboard");
                 }}
@@ -390,7 +434,10 @@ const GameHostPage = () => {
                 <button className="btn" onClick={() => endGameAndDetermineWinner()}>
                   End Game
                 </button>
-                <button className="btn btn-secondary" onClick={() => resetGame()}>
+                <button className="btn btn-secondary" onClick={() => {
+                  stopThinking();
+                  resetGame();
+                }}>
                   Reset Game
                 </button>
               </div>
@@ -529,7 +576,10 @@ const GameHostPage = () => {
                     <label style={{ fontWeight: 600 }}>Choose answering team</label>
                     <select
                       value={selectedTeamId ?? ""}
-                      onChange={(event) => setSelectedTeamId(event.target.value || null)}
+                      onChange={(event) => {
+                        playClick();
+                        setSelectedTeamId(event.target.value || null);
+                      }}
                       style={{ padding: "0.7rem 1rem", borderRadius: 12, border: "1px solid #cbd5f5" }}
                     >
                       {session.teams.map((team) => (

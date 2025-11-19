@@ -28,6 +28,8 @@ interface GameState {
   setActiveTeam: (sessionId: string, teamIndex: number) => Promise<SessionRead>;
   endGameAndDetermineWinner: () => void;
   resetGame: () => void;
+  globalVolume: number;
+  setGlobalVolume: (volume: number) => void;
 }
 
 const gameStore: StateCreator<GameState> = (set, get) => ({
@@ -38,6 +40,8 @@ const gameStore: StateCreator<GameState> = (set, get) => ({
   activeQuestionId: null,
   gameState: "SETUP",
   winningTeams: [],
+  globalVolume: 0.5,
+  setGlobalVolume: (volume: number) => set({ globalVolume: volume }),
   async fetchConfig() {
     if (get().config) return;
     try {
