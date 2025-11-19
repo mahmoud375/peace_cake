@@ -13,12 +13,22 @@ if database_url and database_url.startswith("postgres://"):
 connect_args = {}
 if "sqlite" in database_url:
     connect_args = {"check_same_thread": False}
-
-engine = create_engine(
-    database_url,
-    connect_args=connect_args,
-    future=True,
-)
+    engine = create_engine(
+        database_url,
+        connect_args=connect_args,
+        future=True,
+    )
+else:
+    # Ensure SSL is required for Neon
+    if "sslmode" not in database_url:
+        database_url += "?sslmode=require"
+    
+    engine = create_engine(
+        database_url,
+        pool_pre_ping=True,
+        pool_recycle=300,
+        future=True,
+    )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, future=True)
 
 Base = declarative_base()
