@@ -30,6 +30,7 @@ interface GameState {
   resetGame: () => void;
   globalVolume: number;
   setGlobalVolume: (volume: number) => void;
+  leaveGame: () => void;
 }
 
 const gameStore: StateCreator<GameState> = (set, get) => ({
@@ -141,6 +142,16 @@ const gameStore: StateCreator<GameState> = (set, get) => ({
       winningTeams: [],
       gameState: "SETUP",
       error: null,
+    });
+  },
+  leaveGame() {
+    set({
+      session: null,
+      activeQuestionId: null,
+      winningTeams: [],
+      gameState: "SETUP",
+      error: null,
+      loading: false,
     });
   },
 });

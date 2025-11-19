@@ -39,6 +39,7 @@ const GameHostPage = () => {
     resetGame,
     globalVolume,
     setGlobalVolume,
+    leaveGame,
   } = useGameStore((state: GameState) => ({
     session: state.session,
     config: state.config,
@@ -54,6 +55,7 @@ const GameHostPage = () => {
     resetGame: state.resetGame,
     globalVolume: state.globalVolume,
     setGlobalVolume: state.setGlobalVolume,
+    leaveGame: state.leaveGame,
   }));
 
   // Sound effects
@@ -95,7 +97,10 @@ const GameHostPage = () => {
 
   useEffect(() => {
     fetchConfig().catch(() => null);
-  }, [fetchConfig]);
+    return () => {
+      leaveGame();
+    };
+  }, [fetchConfig, leaveGame]);
 
   useEffect(() => {
     if (session?.teams?.length && session.current_turn_index !== undefined) {
@@ -282,6 +287,10 @@ const GameHostPage = () => {
       setQuestionError("Select a team for the steal attempt");
       return;
     }
+    if (outcome === "correct") {
+      playCorrect();
+    }
+    playClick();
     finishResolution({
       team_id: pendingIncorrectTeamId,
       outcome: "incorrect",
@@ -303,7 +312,10 @@ const GameHostPage = () => {
 
   return (
     <div className="container" style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-      <button className="btn" onClick={() => navigate("/dashboard")}>
+      <button className="btn" onClick={() => {
+        leaveGame();
+        navigate("/dashboard");
+      }}>
         ← Back to dashboard
       </button>
 
