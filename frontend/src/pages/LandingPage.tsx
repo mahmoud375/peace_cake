@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { useProfileStore } from "../store/profileStore";
 
 const LandingPage = () => {
@@ -12,9 +11,11 @@ const LandingPage = () => {
       style={{
         minHeight: "100vh",
         display: "flex",
+        flexDirection: "column", // تغيير بسيط لترتيب العناصر عمودياً
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
+        position: "relative" // ضروري عشان التوقيع
       }}
     >
       <div className="card" style={{ padding: "3rem 2rem", maxWidth: 560 }}>
@@ -32,6 +33,22 @@ const LandingPage = () => {
           </button>
         </div>
       </div>
+
+      {/* --- التعديل الجديد: الإمضاء --- */}
+      <div style={{ 
+        marginTop: "3rem", 
+        color: "#64748b", 
+        fontSize: "0.9rem", 
+        fontWeight: 500 
+      }}>
+        ✨ Vibe Coding by <span style={{ 
+          background: "linear-gradient(to right, #8b5cf6, #ec4899)", 
+          WebkitBackgroundClip: "text", 
+          WebkitTextFillColor: "transparent",
+          fontWeight: "bold"
+        }}>Mahmoud Elgindy</span>
+      </div>
+      {/* ----------------------------- */}
 
       {showInstructions && (
         <div className="modal-overlay">
