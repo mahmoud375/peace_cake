@@ -50,7 +50,7 @@ const LandingPage = () => {
               <li style={{ marginBottom: "1rem" }}>
                 <strong>The Board &amp; Points</strong>
                 <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1rem" }}>
-                  <li>The board is divided into 3 columns: 10 pts (Easy), 20 pts (Medium), and 30 pts (Hard).</li>
+                  <li>The board is divided into <strong>4 columns</strong>: 10 pts (Easy), 20 pts (Medium), 30 pts (Hard), and <strong>40 pts (Impossible)</strong>.</li>
                   <li>Questions are sequentially numbered within each point category (e.g., 1 - Easy, 2 - Easy, etc.).</li>
                   <li>Teams take turns selecting a category and question number.</li>
                 </ul>
