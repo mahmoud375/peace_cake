@@ -53,11 +53,13 @@ export interface SessionRead {
   current_question_id?: string | null;
   question_started_at?: string | null;
   current_turn_index: number;
+  timer_seconds: number;
 }
 
 export interface SessionCreatePayload {
   quiz_id: string;
   teams: { name: string }[];
+  timer_seconds?: number;
 }
 
 export interface QuestionResolutionPayload {

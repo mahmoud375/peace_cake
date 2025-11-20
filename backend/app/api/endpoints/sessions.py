@@ -24,6 +24,7 @@ def _session_to_schema(state: SessionState) -> SessionRead:
         current_question_id=state.current_question_id,
         question_started_at=state.question_started_at,
         current_turn_index=state.current_turn_index,
+        timer_seconds=state.timer_seconds,
     )
 
 
@@ -51,7 +52,11 @@ def create_session(
 ) -> SessionRead:
     _ensure_quiz_exists(db, payload.quiz_id)
     try:
-        state = manager.create_session(payload.quiz_id, [team.name for team in payload.teams])
+        state = manager.create_session(
+            payload.quiz_id, 
+            [team.name for team in payload.teams],
+            timer_seconds=payload.timer_seconds or 20
+        )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     return _session_to_schema(state)

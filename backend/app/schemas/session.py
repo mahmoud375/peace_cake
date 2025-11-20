@@ -18,6 +18,7 @@ class TeamRead(TeamBase):
 class SessionCreate(BaseModel):
     quiz_id: str
     teams: List[TeamBase] = Field(..., min_items=2, max_items=4)
+    timer_seconds: Optional[int] = 20
 
 
 class SessionRead(BaseModel):
@@ -27,7 +28,9 @@ class SessionRead(BaseModel):
     used_question_ids: List[str]
     current_question_id: Optional[str] = None
     question_started_at: Optional[datetime] = None
+    question_started_at: Optional[datetime] = None
     current_turn_index: int
+    timer_seconds: int
 
 
 class QuestionStartResponse(BaseModel):

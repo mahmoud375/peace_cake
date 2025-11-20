@@ -24,7 +24,10 @@ class SessionState:
     used_question_ids: set[str] = field(default_factory=set)
     current_question_id: Optional[str] = None
     question_started_at: Optional[datetime] = None
+    current_question_id: Optional[str] = None
+    question_started_at: Optional[datetime] = None
     current_turn_index: int = 0
+    timer_seconds: int = 20
 
 
 class SessionManager:
@@ -33,7 +36,7 @@ class SessionManager:
         self._lock = Lock()
         self._settings = get_settings()
 
-    def create_session(self, quiz_id: str, team_names: List[str]) -> SessionState:
+    def create_session(self, quiz_id: str, team_names: List[str], timer_seconds: int = 20) -> SessionState:
         if not (self._settings.min_teams <= len(team_names) <= self._settings.max_teams):
             raise ValueError(
                 f"Team count must be between {self._settings.min_teams} and {self._settings.max_teams}."
@@ -45,7 +48,12 @@ class SessionManager:
                 TeamState(id=str(uuid.uuid4()), name=name.strip(), score=0)
                 for name in team_names
             ]
-            state = SessionState(id=session_id, quiz_id=quiz_id, teams=teams)
+            state = SessionState(
+                id=session_id, 
+                quiz_id=quiz_id, 
+                teams=teams, 
+                timer_seconds=timer_seconds
+            )
             self._sessions[session_id] = state
             return state
 

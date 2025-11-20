@@ -78,6 +78,7 @@ const GameHostPage = () => {
   const [teamInputs, setTeamInputs] = useState<string[]>(defaultTeamNames.slice(0, minTeams));
   const [teamError, setTeamError] = useState<string | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [timerSeconds, setTimerSeconds] = useState(20);
 
   const [modalQuestion, setModalQuestion] = useState<Question | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -179,7 +180,11 @@ const GameHostPage = () => {
     }
     setTeamError(null);
     try {
-      await createSession({ quiz_id: quizId, teams: trimmed.map((name) => ({ name })) });
+      await createSession({
+        quiz_id: quizId,
+        teams: trimmed.map((name) => ({ name })),
+        timer_seconds: timerSeconds
+      });
       playClick();
       playIntro();
     } catch (error) {
@@ -201,7 +206,9 @@ const GameHostPage = () => {
     setModalQuestion(question);
     setIsModalOpen(true);
     setRevealed(false);
-    setTimeLeft(config?.primary_timer_seconds ?? 20);
+    setIsModalOpen(true);
+    setRevealed(false);
+    setTimeLeft(session.timer_seconds || 20);
     setStealMode(false);
     setStealTimeLeft(0);
     setPendingIncorrectTeamId(null);
@@ -228,7 +235,10 @@ const GameHostPage = () => {
       await startQuestion(session.id, modalQuestion.id);
       setRevealed(true);
       playThinking();
-      setTimeLeft(config?.primary_timer_seconds ?? 20);
+      await startQuestion(session.id, modalQuestion.id);
+      setRevealed(true);
+      playThinking();
+      setTimeLeft(session.timer_seconds || 20);
     } catch (error) {
       console.error(error);
       setQuestionError("Unable to start timer");
@@ -361,6 +371,17 @@ const GameHostPage = () => {
               <button type="button" className="btn" onClick={addTeam} disabled={teamInputs.length >= maxTeams}>
                 + Team
               </button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              <label style={{ fontSize: "0.9rem", color: "#64748b" }}>Time per question (sec)</label>
+              <input
+                type="number"
+                min="5"
+                max="300"
+                value={timerSeconds}
+                onChange={(e) => setTimerSeconds(parseInt(e.target.value) || 20)}
+                style={{ padding: "0.75rem 1rem", borderRadius: 999, border: "1px solid #cbd5f5" }}
+              />
             </div>
             {teamError && <span style={{ color: "#dc2626" }}>{teamError}</span>}
           </form>
@@ -524,7 +545,7 @@ const GameHostPage = () => {
 
             {!revealed && (
               <div style={{ marginTop: "1.5rem" }}>
-                <p>This question will reveal for {config?.primary_timer_seconds ?? 20} seconds.</p>
+                <p>This question will reveal for {session.timer_seconds || 20} seconds.</p>
                 <button className="btn btn-primary" onClick={handleStartAndReveal}>
                   Start & Reveal
                 </button>
