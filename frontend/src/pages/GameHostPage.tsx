@@ -66,7 +66,7 @@ const GameHostPage = () => {
   const [playClick] = useSound("/sounds/click.mp3", { volume: globalVolume });
   const [playTie] = useSound("/sounds/tie.mp3", { volume: globalVolume });
   const [playIntro] = useSound("/sounds/intro.mp3", { volume: globalVolume });
-  const [playTick] = useSound("/sounds/tick.mp3", { volume: globalVolume });
+  const [playTick, { stop: stopTick }] = useSound("/sounds/tick.mp3", { volume: globalVolume });
   const [playThinking, { stop: stopThinking }] = useSound("/sounds/thinking.mp3", {
     loop: true,
     volume: globalVolume * 0.5,
@@ -112,6 +112,14 @@ const GameHostPage = () => {
       }
     }
   }, [session]);
+
+  // Safeguard: Stop all sounds when modal closes or game state changes
+  useEffect(() => {
+    if (!isModalOpen || gameState !== "BOARD") {
+      stopThinking();
+      stopTick();
+    }
+  }, [isModalOpen, gameState, stopThinking, stopTick]);
 
   useEffect(() => {
     if (!revealed || timeLeft <= 0) return;
@@ -218,6 +226,7 @@ const GameHostPage = () => {
 
   const closeModal = () => {
     stopThinking();
+    stopTick();
     setModalQuestion(null);
     setIsModalOpen(false);
     setRevealed(false);
@@ -288,6 +297,7 @@ const GameHostPage = () => {
 
   const resolveWithoutSteal = () => {
     if (!pendingIncorrectTeamId) return;
+    stopTick();
     finishResolution({ team_id: pendingIncorrectTeamId, outcome: "incorrect" });
   };
 
@@ -301,6 +311,7 @@ const GameHostPage = () => {
       playCorrect();
     }
     playClick();
+    stopTick();
     finishResolution({
       team_id: pendingIncorrectTeamId,
       outcome: "incorrect",
