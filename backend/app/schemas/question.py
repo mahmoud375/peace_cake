@@ -16,14 +16,15 @@ class DifficultyLevel(str, Enum):
 
 class QuestionBase(BaseModel):
     prompt: str
-    options: List[str] = Field(..., min_length=3, max_length=4)
+    options: List[str] = Field(..., max_length=4)  # Allow 0-4 options
     correct_index: int
     points: int = Field(..., gt=0)
     difficulty: Optional[DifficultyLevel] = None
 
     @model_validator(mode="after")
     def validate_correct_index(self) -> "QuestionBase":
-        if not 0 <= self.correct_index < len(self.options):
+        # Only validate if there are options
+        if len(self.options) > 0 and not 0 <= self.correct_index < len(self.options):
             raise ValueError("correct_index must reference one of the provided options")
         return self
 
@@ -34,7 +35,7 @@ class QuestionCreate(QuestionBase):
 
 class QuestionUpdate(BaseModel):
     prompt: Optional[str] = None
-    options: Optional[List[str]] = Field(default=None, min_length=3, max_length=4)
+    options: Optional[List[str]] = Field(default=None, max_length=4)  # Allow 0-4 options
     correct_index: Optional[int] = None
     points: Optional[int] = Field(default=None, gt=0)
     difficulty: Optional[DifficultyLevel] = None
@@ -42,7 +43,8 @@ class QuestionUpdate(BaseModel):
     @model_validator(mode="after")
     def validate_indices(self) -> "QuestionUpdate":
         if self.options is not None and self.correct_index is not None:
-            if not 0 <= self.correct_index < len(self.options):
+            # Only validate if there are options
+            if len(self.options) > 0 and not 0 <= self.correct_index < len(self.options):
                 raise ValueError("correct_index must reference one of the provided options")
         return self
 
