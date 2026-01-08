@@ -28,7 +28,6 @@ class SessionRead(BaseModel):
     used_question_ids: List[str]
     current_question_id: Optional[str] = None
     question_started_at: Optional[datetime] = None
-    question_started_at: Optional[datetime] = None
     current_turn_index: int
     timer_seconds: int
 
